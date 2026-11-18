@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kvpark"
+version = "0.1.0"
+description = "Memory-tier capacity and bandwidth analysis for paused KV caches in agentic LLM serving"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Pushkar Devanahalli Gopalakrishna"}]
+requires-python = ">=3.9"
+dependencies = ["numpy>=1.24", "matplotlib>=3.7"]
+
+[project.optional-dependencies]
+tokens = ["tiktoken>=0.5"]
+
+[tool.setuptools]
+packages = ["kvpark"]
