@@ -42,6 +42,15 @@ to published aggregate statistics, not replayed from per-step traces.
 
 ## Running on real agent traces
 
+Easiest (no AWS CLI, about 12 GB streamed but never stored):
+
+```bash
+python scripts/fetch_and_reduce.py            # writes data/sessions_claude-45sonnet-10132025.json.gz
+python scripts/run_all.py --traj data/sessions_claude-45sonnet-10132025.json.gz --out out
+```
+
+Or with the AWS CLI:
+
 The SWE-Bench Pro trajectories released by Scale AI record the tool execution time of
 every step:
 
