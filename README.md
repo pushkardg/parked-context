@@ -13,7 +13,7 @@ attention designs (GQA, MLA, sliding-window, MoE).
 | Output | Description |
 |---|---|
 | KV geometry | Bytes per token and per context for each model, including MLA latents and sliding-window layers |
-| Reload vs. recompute | Time to reload from each tier vs. re-running prefill, and the break-even link bandwidth |
+| Reload vs. recompute | Time to reload from each tier vs. re-running prefill, and the break-even link bandwidth (shard-aware) |
 | Idle-KV concentration | How idle KV byte-seconds are spread across tool pauses |
 | TTL sweep | For a time-to-live policy: idle KV left in HBM vs. moved off it, link traffic, and resume stalls |
 | Provisioning | Sessions per replica, p99 off-HBM capacity per GPU, and p99 resume stall per model and tier |
@@ -59,6 +59,9 @@ python scripts/run_all.py --traj data/sessions_claude45.json.gz --out out
 - **Model configs** in `kvpark/hw.py` (layers, KV heads, head dim, MLA rank, window,
   global layers) follow each model's public `config.json`.
 - **Deployments** (`DEPLOY` in `scripts/run_all.py`): H100-80GB GPUs per replica and weight sizes.
+- **KV placement**: GQA caches split across `min(GPUs, KV heads)` shards under tensor
+  parallelism (replicated beyond that); MLA caches use data-parallel attention, so a
+  session's KV lives on one GPU and reloads over one link.
 - **Tier bandwidths** are nominal per-direction figures, scaled by `EFF = 0.8`.
 - **Recompute** assumes 989 TFLOP/s BF16 dense at 50% utilization; decode uses a fixed TPOT of 30 ms.
 

@@ -43,6 +43,21 @@ class Model:
             out = out + local * b * np.minimum(ctx, self.window)
         return out
 
+    def kv_shards(self, gpus: int) -> int:
+        """Distinct KV shards across a replica of `gpus` GPUs.
+        GQA under tensor parallelism splits KV heads over at most kv_heads GPUs;
+        beyond that, heads are replicated. MLA keeps one latent per token, so it
+        is served with data-parallel attention: a session's KV lives on one GPU."""
+        if self.mla_dim:
+            return 1
+        return max(1, min(gpus, self.kv_heads))
+
+    def kv_replication(self, gpus: int) -> float:
+        """HBM copies of each KV byte across the replica."""
+        if self.mla_dim:
+            return 1.0
+        return gpus / self.kv_shards(gpus)
+
     def bytes_per_token_full(self) -> float:
         """Asymptotic bytes per extra token (local layers saturated)."""
         return self._full_layers() * self.per_layer_token_bytes()
@@ -114,16 +129,17 @@ H100 = GPU()
 
 
 def reload_seconds(model: Model, ctx, tier: Tier, gpus: int = 1, eff: float = EFF):
-    """Time to bring a parked KV back to HBM; KV is sharded over `gpus`,
-    each with its own link."""
-    return model.kv_bytes(ctx) / (tier.bw_gbs * 1e9 * eff * gpus)
+    """Time to bring a parked KV back to HBM. The KV is split into
+    model.kv_shards(gpus) shards, each loaded over its own GPU's link."""
+    return model.kv_bytes(ctx) / (tier.bw_gbs * 1e9 * eff * model.kv_shards(gpus))
 
 
 def recompute_seconds(model: Model, ctx, gpu: GPU = H100, gpus: int = 1):
     return model.prefill_flops(ctx) / (gpu.bf16_tflops * 1e12 * gpu.mfu_prefill * gpus)
 
 
-def breakeven_bw_gbs(model: Model, ctx, gpu: GPU = H100):
-    """Link bandwidth (GB/s, sustained, per GPU) above which reloading beats
-    recomputing. Independent of tensor-parallel degree to first order."""
-    return model.kv_bytes(ctx) / recompute_seconds(model, ctx, gpu) / 1e9
+def breakeven_bw_gbs(model: Model, ctx, gpu: GPU = H100, gpus: int = 1):
+    """Sustained per-link bandwidth (GB/s) above which reloading beats
+    recomputing on a replica of `gpus` GPUs. Equals B*P*u/F when the KV is
+    split across all GPUs, and grows by gpus/shards when it is not."""
+    return (model.kv_bytes(ctx) / model.kv_shards(gpus)) / recompute_seconds(model, ctx, gpu, gpus) / 1e9

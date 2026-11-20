@@ -73,8 +73,9 @@ def main():
         rows.append(dict(
             model=name, attn=m.attn, gpus=g,
             kib_tok=m.bytes_per_token_full() / 1024,
+            kib_tok_link=m.bytes_per_token_full() / 1024 / m.kv_shards(g),
             gib32=float(m.kv_bytes(32768)) / 2**30, gib128=float(m.kv_bytes(131072)) / 2**30,
-            be_gbs=float(breakeven_bw_gbs(m, 32768)),
+            be_gbs=float(breakeven_bw_gbs(m, 32768, gpus=g)), shards=m.kv_shards(g),
             recompute_s=float(recompute_seconds(m, 32768, gpus=g)),
             reload_ms=1e3 * float(reload_seconds(m, 32768, HOST, gpus=g)),
             reload_ssd_ms=1e3 * float(reload_seconds(m, 32768, TIERS["NVMe Gen5 SSD"], gpus=g)),
@@ -82,13 +83,13 @@ def main():
     R["table"] = rows
     with open(os.path.join(a.out, "table_models.tex"), "w") as f:
         for r in rows:
-            f.write(f"{r['model']} & {r['attn']} & {r['gpus']} & {r['kib_tok']:.0f} & "
-                    f"{r['gib32']:.1f} & {r['be_gbs']:.2f} & {r['recompute_s']:.2f} & "
+            f.write(f"{r['model']} & {r['attn']} & {r['gpus']}/{r['shards']} & {r['kib_tok']:.0f} & "
+                    f"{r['kib_tok_link']:.0f} & {r['be_gbs']:.2f} & {r['recompute_s']:.2f} & "
                     f"{r['reload_ms']:.0f} \\\\\n")
 
     # ---------------- Fig 1: pauses and byte-second concentration ----------
     m = MODELS[FOCUS]; g = DEPLOY[FOCUS][0]
-    B, P, D, _ = flatten(m, sess, g, TPOT)
+    B, P, D, _, _, _, _ = flatten(m, sess, g, TPOT)
     keep = P > 0
     Bp, Pp = B[keep], P[keep]
     o = np.argsort(-Pp); bs = (Bp * Pp)[o]; share = np.cumsum(bs) / bs.sum()
