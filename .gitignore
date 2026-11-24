@@ -3,6 +3,4 @@ __pycache__/
 *.egg-info/
 .venv/
 out/
-data/
 *.traj
-*.json.gz
