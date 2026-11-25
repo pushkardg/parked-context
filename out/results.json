@@ -1,0 +1,394 @@
+{
+ "workload": "trace:data/sessions_claude-45sonnet-10132025.json.gz",
+ "summary": {
+  "sessions": 730.0,
+  "mean_calls": 77.46301369863014,
+  "tok_per_call": 36420.71823937186,
+  "tool_s_per_task": 281.56602876712327,
+  "frac_gt10": 0.03964670894693468,
+  "median_pause": 0.439,
+  "p99_pause": 51.811240000000396,
+  "max_step": 125.08423561643835
+ },
+ "target": {
+  "calls": 78.0,
+  "tok_per_call": 34705.0,
+  "tool_s_per_task": 265.7,
+  "frac_gt10": 0.036567599067599064,
+  "max_step": 123.5,
+  "out_per_task": 17705.0,
+  "ctx0": 12300.0
+ },
+ "table": [
+  {
+   "model": "Llama-3.1-8B",
+   "attn": "GQA",
+   "gpus": 1,
+   "kib_tok": 128.0,
+   "kib_tok_link": 128.0,
+   "gib32": 4.0,
+   "gib128": 16.0,
+   "be_gbs": 2.6358388127265173,
+   "shards": 1,
+   "recompute_s": 1.6294499023471305,
+   "reload_ms": 83.88608,
+   "reload_ssd_ms": 383.4792228571429
+  },
+  {
+   "model": "Gemma-3-27B",
+   "attn": "SWA 5:1",
+   "gpus": 1,
+   "kib_tok": 93.0,
+   "kib_tok_link": 93.0,
+   "gib32": 2.90625,
+   "gib128": 10.40625,
+   "be_gbs": 0.8183812247293866,
+   "shards": 1,
+   "recompute_s": 3.813091114146556,
+   "reload_ms": 60.948479999999996,
+   "reload_ssd_ms": 278.6216228571429
+  },
+  {
+   "model": "gpt-oss-120b",
+   "attn": "SWA 1:1+MoE",
+   "gpus": 1,
+   "kib_tok": 36.140625,
+   "kib_tok_link": 36.140625,
+   "gib32": 1.12939453125,
+   "gib128": 4.50439453125,
+   "be_gbs": 1.2144025979929836,
+   "shards": 1,
+   "recompute_s": 0.998579998102908,
+   "reload_ms": 23.68512,
+   "reload_ssd_ms": 108.27483428571429
+  },
+  {
+   "model": "Llama-3.1-70B",
+   "attn": "GQA",
+   "gpus": 8,
+   "kib_tok": 320.0,
+   "kib_tok_link": 40.0,
+   "gib32": 10.0,
+   "gib128": 40.0,
+   "be_gbs": 0.8799242344307446,
+   "shards": 8,
+   "recompute_s": 1.5253327814846511,
+   "reload_ms": 26.214399999999998,
+   "reload_ssd_ms": 119.83725714285714
+  },
+  {
+   "model": "Qwen3-235B-A22B",
+   "attn": "GQA+MoE",
+   "gpus": 8,
+   "kib_tok": 188.0,
+   "kib_tok_link": 47.0,
+   "gib32": 5.875,
+   "gib128": 23.5,
+   "be_gbs": 2.015483228071094,
+   "shards": 4,
+   "recompute_s": 0.7824715591949202,
+   "reload_ms": 30.80192,
+   "reload_ssd_ms": 140.80877714285714
+  },
+  {
+   "model": "DeepSeek-V3",
+   "attn": "MLA+MoE",
+   "gpus": 16,
+   "kib_tok": 68.625,
+   "kib_tok_link": 68.625,
+   "gib32": 2.14453125,
+   "gib128": 8.578125,
+   "be_gbs": 0.2611568927510757,
+   "shards": 1,
+   "recompute_s": 8.817201306629176,
+   "reload_ms": 44.97408,
+   "reload_ssd_ms": 205.59579428571428
+  },
+  {
+   "model": "Llama-3.1-405B",
+   "attn": "GQA",
+   "gpus": 16,
+   "kib_tok": 504.0,
+   "kib_tok_link": 63.0,
+   "gib32": 15.75,
+   "gib128": 63.0,
+   "be_gbs": 0.5399593250270552,
+   "shards": 8,
+   "recompute_s": 3.914978625277153,
+   "reload_ms": 41.28768,
+   "reload_ssd_ms": 188.74367999999998
+  }
+ ],
+ "concentration": {
+  "0.01": {
+   "pause_gt_s": 52.072,
+   "byte_sec_share": 0.5990642203001028
+  },
+  "0.02": {
+   "pause_gt_s": 22.812,
+   "byte_sec_share": 0.7084603528807738
+  },
+  "0.05": {
+   "pause_gt_s": 7.382,
+   "byte_sec_share": 0.8168601518515108
+  },
+  "0.1": {
+   "pause_gt_s": 2.585,
+   "byte_sec_share": 0.8760521774510405
+  },
+  "0.2": {
+   "pause_gt_s": 1.068,
+   "byte_sec_share": 0.9183288879405842
+  }
+ },
+ "idle_share_inf": 0.3555590183500681,
+ "idle_share_tpot": {
+  "0.01": 0.6205383214229785,
+  "0.02": 0.452081954172837,
+  "0.03": 0.3555590183500681,
+  "0.05": 0.24916273861783267
+ },
+ "pause_pcts": {
+  "50": 0.445,
+  "90": 2.585,
+  "99": 51.92225,
+  "99.9": 452.2910750000002
+ },
+ "fig2": {
+  "NVMe Gen5 SSD": {
+   "ms_32k": 119.83725714285714,
+   "ms_128k": 479.34902857142856
+  },
+  "Host DRAM (PCIe 5.0 x16)": {
+   "ms_32k": 26.214399999999998,
+   "ms_128k": 104.85759999999999
+  },
+  "CXL 2.0 x16 expander": {
+   "ms_32k": 26.214399999999998,
+   "ms_128k": 104.85759999999999
+  },
+  "Grace LPDDR5X (NVLink-C2C)": {
+   "ms_32k": 3.728270222222222,
+   "ms_128k": 14.913080888888889
+  },
+  "recompute": {
+   "ms_32k": 1525.3327814846512,
+   "ms_128k": 10370.41570699001
+  }
+ },
+ "ttl_sweep": {
+  "0.0": {
+   "active_gb": 1.1446815550547358,
+   "parked_hbm_gb": 0.0,
+   "offloaded_gb": 0.6315579884393193,
+   "link_gbs": 0.2924910424982866,
+   "stall_mean_ms": 28.862616537578887,
+   "stall_p99_ms": 74.68759999999999,
+   "offload_frac": 0.9863478814458513,
+   "stall_time_frac": 0.0028563578368973304
+  },
+  "0.1": {
+   "active_gb": 1.1446815550547358,
+   "parked_hbm_gb": 0.014624552124914331,
+   "offloaded_gb": 0.6169334363144051,
+   "link_gbs": 0.2924910424982866,
+   "stall_mean_ms": 28.862616537578887,
+   "stall_p99_ms": 74.68759999999999,
+   "offload_frac": 0.9863478814458513,
+   "stall_time_frac": 0.0028563578368973304
+  },
+  "0.25": {
+   "active_gb": 1.144758513052271,
+   "parked_hbm_gb": 0.036411590098434005,
+   "offloaded_gb": 0.5951888585674024,
+   "link_gbs": 0.28562626042160016,
+   "stall_mean_ms": 28.879729301317266,
+   "stall_p99_ms": 74.04815999999988,
+   "offload_frac": 0.9625627785244394,
+   "stall_time_frac": 0.002789318949429689
+  },
+  "0.5": {
+   "active_gb": 1.1464163349844523,
+   "parked_hbm_gb": 0.0627864627789186,
+   "offloaded_gb": 0.5697286600860918,
+   "link_gbs": 0.13774577170170213,
+   "stall_mean_ms": 31.737030521549553,
+   "stall_p99_ms": 76.08931200000005,
+   "offload_frac": 0.4218009478672986,
+   "stall_time_frac": 0.0013451735517744348
+  },
+  "1.0": {
+   "active_gb": 1.1471603614350323,
+   "parked_hbm_gb": 0.08587905196697261,
+   "offloaded_gb": 0.5470465744537202,
+   "link_gbs": 0.07137736807735254,
+   "stall_mean_ms": 33.703462608546126,
+   "stall_p99_ms": 77.82816000000018,
+   "offload_frac": 0.2056836669731909,
+   "stall_time_frac": 0.000697044610130396
+  },
+  "2.0": {
+   "active_gb": 1.1474880626743191,
+   "parked_hbm_gb": 0.11297532484044147,
+   "offloaded_gb": 0.5201311049963447,
+   "link_gbs": 0.04214586951944698,
+   "stall_mean_ms": 34.640612215568865,
+   "stall_p99_ms": 75.237032,
+   "offload_frac": 0.1181297304944472,
+   "stall_time_frac": 0.0004115807570258494
+  },
+  "5.0": {
+   "active_gb": 1.1476958982194323,
+   "parked_hbm_gb": 0.15841851877023386,
+   "offloaded_gb": 0.474802580686429,
+   "link_gbs": 0.023606591332771296,
+   "stall_mean_ms": 35.71859382579934,
+   "stall_p99_ms": 74.96815199999999,
+   "offload_frac": 0.06415788356794228,
+   "stall_time_frac": 0.00023053311848409468
+  },
+  "10.0": {
+   "active_gb": 1.1478000363979743,
+   "parked_hbm_gb": 0.20405221971263957,
+   "offloaded_gb": 0.42922633615910155,
+   "link_gbs": 0.014317291656911799,
+   "stall_mean_ms": 35.46337472924188,
+   "stall_p99_ms": 76.5490799999999,
+   "offload_frac": 0.039187946523307635,
+   "stall_time_frac": 0.00013981730133702928
+  },
+  "30.0": {
+   "active_gb": 1.1478897637341747,
+   "parked_hbm_gb": 0.29084299963343707,
+   "offloaded_gb": 0.342485061723658,
+   "link_gbs": 0.006313463217175715,
+   "stall_mean_ms": 35.9083407253886,
+   "stall_p99_ms": 83.77766400000002,
+   "offload_frac": 0.01706514819268586,
+   "stall_time_frac": 6.165491423023159e-05
+  },
+  "60.0": {
+   "active_gb": 1.1479291995146559,
+   "parked_hbm_gb": 0.35818342431229383,
+   "offloaded_gb": 0.2751663950456037,
+   "link_gbs": 0.002795725649935725,
+   "stall_mean_ms": 34.32630872483222,
+   "stall_p99_ms": 76.15307200000002,
+   "offload_frac": 0.007904788851948787,
+   "stall_time_frac": 2.730200830015356e-05
+  },
+  "300.0": {
+   "active_gb": 1.1479462315018487,
+   "parked_hbm_gb": 0.538398833400955,
+   "offloaded_gb": 0.09496038305740505,
+   "link_gbs": 0.0012764439098214284,
+   "stall_mean_ms": 33.679996153846155,
+   "stall_p99_ms": 74.51535200000002,
+   "offload_frac": 0.0036782910094079364,
+   "stall_time_frac": 1.2465272556849886e-05
+  }
+ },
+ "ttl_inf": {
+  "active_gb": 1.1479605411428786,
+  "parked_hbm_gb": 0.6333671115520342,
+  "offloaded_gb": 0.0,
+  "link_gbs": 0.0,
+  "stall_mean_ms": 0.0,
+  "stall_p99_ms": 0.0,
+  "offload_frac": 0.0,
+  "stall_time_frac": 0.0
+ },
+ "provision": [
+  {
+   "model": "Llama-3.1-8B",
+   "budget_gb": 55.9,
+   "sess_inf": 9,
+   "sess_ttl": 13,
+   "gain": 1.4444444444444444,
+   "off_mean_gb_gpu": 23.799512471863782,
+   "off_p99_gb_gpu": 51.395821568,
+   "link_gbs_gpu": 1.750407661203797,
+   "stall_p99_ms_host": 240.75850240000003,
+   "stall_p99_ms_ssd": 1100.6102966857143,
+   "idle_share": 0.3552056100439716
+  },
+  {
+   "model": "Gemma-3-27B",
+   "budget_gb": 17.1,
+   "sess_inf": 4,
+   "sess_ttl": 6,
+   "gain": 1.5,
+   "off_mean_gb_gpu": 8.514636022780959,
+   "off_p99_gb_gpu": 22.80628224,
+   "link_gbs_gpu": 0.5651885635526298,
+   "stall_p99_ms_host": 158.993744,
+   "stall_p99_ms_ssd": 726.828544,
+   "idle_share": 0.3555576069565463
+  },
+  {
+   "model": "gpt-oss-120b",
+   "budget_gb": 7.0,
+   "sess_inf": 4,
+   "sess_ttl": 6,
+   "gain": 1.5,
+   "off_mean_gb_gpu": 3.2871375765674946,
+   "off_p99_gb_gpu": 8.511123456,
+   "link_gbs_gpu": 0.2285313103589754,
+   "stall_p99_ms_host": 67.80548879999999,
+   "stall_p99_ms_ssd": 309.9679488,
+   "idle_share": 0.3559526950317088
+  },
+  {
+   "model": "Llama-3.1-70B",
+   "budget_gb": 434.9,
+   "sess_inf": 30,
+   "sess_ttl": 43,
+   "gain": 1.4333333333333333,
+   "off_mean_gb_gpu": 23.851772510490548,
+   "off_p99_gb_gpu": 38.12683776,
+   "link_gbs_gpu": 1.8122723893362203,
+   "stall_p99_ms_host": 75.237032,
+   "stall_p99_ms_ssd": 343.94071771428577,
+   "idle_share": 0.35555901835006803
+  },
+  {
+   "model": "Qwen3-235B-A22B",
+   "budget_gb": 106.0,
+   "sess_inf": 6,
+   "sess_ttl": 8,
+   "gain": 1.3333333333333333,
+   "off_mean_gb_gpu": 2.7094459954194625,
+   "off_p99_gb_gpu": 6.343174144,
+   "link_gbs_gpu": 0.39667164994246634,
+   "stall_p99_ms_host": 88.4035126,
+   "stall_p99_ms_ssd": 404.1303433142857,
+   "idle_share": 0.35591581803859584
+  },
+  {
+   "model": "DeepSeek-V3",
+   "budget_gb": 467.0,
+   "sess_inf": 152,
+   "sess_ttl": 216,
+   "gain": 1.4210526315789473,
+   "off_mean_gb_gpu": 12.097371522720383,
+   "off_p99_gb_gpu": 16.036606224,
+   "link_gbs_gpu": 0.9773149957835416,
+   "stall_p99_ms_host": 129.07853302499998,
+   "stall_p99_ms_ssd": 590.0732938285714,
+   "idle_share": 0.3559722154682226
+  },
+  {
+   "model": "Llama-3.1-405B",
+   "budget_gb": 341.0,
+   "sess_inf": 7,
+   "sess_ttl": 10,
+   "gain": 1.4285714285714286,
+   "off_mean_gb_gpu": 4.330159912456199,
+   "off_p99_gb_gpu": 10.696218624,
+   "link_gbs_gpu": 0.6601572310934192,
+   "stall_p99_ms_host": 118.49832540000001,
+   "stall_p99_ms_ssd": 541.7066304,
+   "idle_share": 0.35386694848358863
+  }
+ ]
+}
