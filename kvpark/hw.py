@@ -4,6 +4,7 @@ All model numbers come from the public HuggingFace config.json of each model.
 Re-check them against the configs before submission (see README "Verify").
 """
 from dataclasses import dataclass, field
+import numpy as np
 
 BF16 = 2  # bytes per element
 
@@ -22,6 +23,7 @@ class Model:
     global_layers: int = -1   # layers with full attention (-1 = all)
     max_ctx: int = 131072
     elem_bytes: int = BF16
+    local_params: float = 0.0  # DP-attention MLA: active params run on the session's GPU
 
     def _full_layers(self) -> int:
         return self.layers if self.global_layers < 0 else self.global_layers
@@ -67,7 +69,19 @@ class Model:
         2*N per token for weights + causal attention score/value FLOPs."""
         import numpy as np
         ctx = np.minimum(np.asarray(ctx, dtype=float), self.max_ctx)
-        lin = 2.0 * self.active_params * ctx
+        return self.linear_flops(ctx) + self.attn_flops(ctx)
+
+    def linear_flops(self, ctx):
+        """2*N_a FLOPs per token for the weight matmuls."""
+        import numpy as np
+        ctx = np.minimum(np.asarray(ctx, dtype=float), self.max_ctx)
+        return 2.0 * self.active_params * ctx
+
+    def attn_flops(self, ctx):
+        """Causal attention score/value FLOPs: 2*d_q*c^2 per global layer and
+        4*d_q*(c*w - w^2/2), w=min(c,W), per sliding-window layer."""
+        import numpy as np
+        ctx = np.minimum(np.asarray(ctx, dtype=float), self.max_ctx)
         d = self.q_heads * self.head_dim
         full = self._full_layers()
         local = self.layers - full
@@ -77,10 +91,14 @@ class Model:
             w = np.minimum(ctx, self.window)
             pairs = ctx * w - w ** 2 / 2.0       # banded causal pairs
             attn = attn + local * 4.0 * d * pairs
-        return lin + attn
+        return attn
+
+    def bytes_per_token_at(self, ctx) -> float:
+        """Effective KV bytes per token at context ctx: B(c)/c."""
+        return float(self.kv_bytes(ctx)) / float(min(ctx, self.max_ctx))
 
 
-# --- Models (values from public config.json files; VERIFY before submission) ---
+# --- Models (values from the model makers' published configs) ---
 MODELS = {
     "Llama-3.1-8B": Model("Llama-3.1-8B", "GQA", 32, 8, 128, 8.0e9, 32),
     "Llama-3.1-70B": Model("Llama-3.1-70B", "GQA", 80, 8, 128, 70.6e9, 64),
@@ -88,8 +106,11 @@ MODELS = {
     "Qwen3-235B-A22B": Model("Qwen3-235B-A22B", "GQA+MoE", 94, 4, 128, 22e9, 64),
     # MLA: kv_lora_rank 512 + qk_rope_head_dim 64 cached per layer per token.
     # q_heads*head_dim for attention FLOPs: 128 heads x (128 nope + 64 rope) = 192.
+    # local_params: attention projections (11.4B), 3 dense FFN layers (1.2B),
+    # shared experts (2.6B) and LM head (0.9B) run on the session's GPU; the
+    # 8 routed experts per token (20.4B) are expert-parallel.
     "DeepSeek-V3": Model("DeepSeek-V3", "MLA+MoE", 61, 0, 192, 37e9, 128,
-                         mla_dim=576),
+                         mla_dim=576, local_params=16.1e9),
     # Gemma 3 27B: 5 local (window 1024) : 1 global; 62 layers -> 10 global.
     "Gemma-3-27B": Model("Gemma-3-27B", "SWA 5:1", 62, 16, 128, 27e9, 32,
                          window=1024, global_layers=10),
@@ -135,7 +156,19 @@ def reload_seconds(model: Model, ctx, tier: Tier, gpus: int = 1, eff: float = EF
 
 
 def recompute_seconds(model: Model, ctx, gpu: GPU = H100, gpus: int = 1):
-    return model.prefill_flops(ctx) / (gpu.bf16_tflops * 1e12 * gpu.mfu_prefill * gpus)
+    """Prefill time for a ctx-token prefix on a replica of `gpus` GPUs.
+    Tensor-parallel (GQA) models split all FLOPs across the GPUs. MLA models
+    with data-parallel attention run a session's attention on one GPU, so only
+    the weight FLOPs (expert-parallel) spread across the replica. Expert
+    all-to-all and tensor-parallel communication are ignored, which favours
+    recomputation."""
+    rate = gpu.bf16_tflops * 1e12 * gpu.mfu_prefill
+    if model.mla_dim:
+        c = np.minimum(np.asarray(ctx, dtype=float), model.max_ctx)
+        local = 2.0 * model.local_params * c + model.attn_flops(ctx)
+        expert = 2.0 * (model.active_params - model.local_params) * c
+        return local / rate + expert / (rate * gpus)
+    return model.prefill_flops(ctx) / (rate * gpus)
 
 
 def breakeven_bw_gbs(model: Model, ctx, gpu: GPU = H100, gpus: int = 1):

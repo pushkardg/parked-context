@@ -72,8 +72,8 @@ def main():
         m = MODELS[name]; g, _ = DEPLOY[name]
         rows.append(dict(
             model=name, attn=m.attn, gpus=g,
-            kib_tok=m.bytes_per_token_full() / 1024,
-            kib_tok_link=m.bytes_per_token_full() / 1024 / m.kv_shards(g),
+            kib_tok=m.bytes_per_token_at(32768) / 1024,
+            kib_tok_link=m.bytes_per_token_at(32768) / 1024 / m.kv_shards(g),
             gib32=float(m.kv_bytes(32768)) / 2**30, gib128=float(m.kv_bytes(131072)) / 2**30,
             be_gbs=float(breakeven_bw_gbs(m, 32768, gpus=g)), shards=m.kv_shards(g),
             recompute_s=float(recompute_seconds(m, 32768, gpus=g)),
@@ -155,9 +155,10 @@ def main():
     ax[0].semilogx(x, [r["offloaded_gb"] * 1e3 for r in sw], color=C[1], ls="--", marker="s", ms=2.5, label="Off-HBM tier")
     ax[0].axvline(TTL_STAR, color=MUTED, lw=0.6, ls=":")
     ax[0].set_xlabel("TTL (s)"); ax[0].set_ylabel("Idle KV (MB/GPU/session)")
-    ax[0].set_ylim(0, 470)
-    ax[0].text(0.06, 420, "off-HBM tier", fontsize=5.8, color=INK)
-    ax[0].text(0.06, 75, "idle in HBM", fontsize=5.8, color=INK)
+    ymax = 1e3 * max(max(r["offloaded_gb"], r["parked_hbm_gb"]) for r in sw) * 1.18
+    ax[0].set_ylim(0, ymax)
+    ax[0].text(0.06, ymax * 0.92, "off-HBM tier", fontsize=5.8, color=INK)
+    ax[0].text(0.06, ymax * 0.30, "idle in HBM", fontsize=5.8, color=INK)
     ax[0].set_title("(a) Where idle KV lives", fontsize=7, color=INK)
     ax[1].loglog(x, [r["link_gbs"] * 1e3 for r in sw], color=C[0], marker="o", ms=2.5)
     ax[1].axvline(TTL_STAR, color=MUTED, lw=0.6, ls=":")

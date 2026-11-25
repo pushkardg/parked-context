@@ -63,6 +63,55 @@ python scripts/run_all.py --traj data/sessions_claude45.json.gz --out out
 
 `run_all.py` also accepts a directory of `.traj` files directly (`--traj data/claude45`).
 
+## Reproduce the paper
+
+With the reduced trace file in `data/` (see above), one command regenerates
+every number, table and figure in the letter (about 20 minutes on a laptop):
+
+```bash
+sh reproduce.sh out
+```
+
+## Contention-aware provisioning
+
+`kvpark/replay.py` is an event-driven replay with per-link FIFO transfer queues
+(offload and reload directions separate), offload completion and cancellation,
+and per-GPU HBM tracking. `scripts/review_analyses.py` uses it for p99-safe
+concurrency, bandwidth sensitivity (4–51.2 GB/s), prefill-utilization
+sensitivity, session-bootstrap confidence intervals and context-window checks:
+
+```bash
+python scripts/review_analyses.py --traj data/sessions_claude-45sonnet-10132025.json.gz --out out
+```
+
+It also models a memory pool shared by all of a replica's links (`pool_gbs`),
+either in order (`pool_mode="fifo"`) or as a work-conserving fluid that shares
+the pool max-min fairly among active transfers (`pool_mode="fluid"`). HBM and
+off-HBM occupancy are tracked exactly as step functions, so maxima and
+time-weighted percentiles have no sampling error; the replay reports how often
+occupancy exceeds the KV budget and how much idle KV it actually frees.
+
+`scripts/review_extra.py` (run after `review_analyses.py`) adds per-seed
+bandwidth thresholds, a shared-pool sweep with and without offload writes on
+the pool, idle-KV concentration for every model, provisioning at
+mean/p95/p99/p99.9/max occupancy, usable-HBM sensitivity, the share of all
+tool returns over 100 ms, per-seed pool thresholds (in-order and fluid), TPOT
+and token-count sensitivity, and a 128k-context feasibility check.
+`scripts/review_cancel_pool.py` compares aborting an in-flight offload with
+letting it finish (`preempt_inflight=False`) and checks a 352 GB/s shared pool
+across seeds.
+
+## GPU calibration
+
+`scripts/gpu_calibrate.py` measures host-to-device and device-to-host copies of
+KV-sized buffers (pinned and pageable, alone and concurrent) and, optionally,
+prefill time, and compares them with the model's `B / (eta * BW)`:
+
+```bash
+pip install torch
+python scripts/gpu_calibrate.py
+```
+
 ## Assumptions to check
 
 - **Model configs** in `kvpark/hw.py` (layers, KV heads, head dim, MLA rank, window,
